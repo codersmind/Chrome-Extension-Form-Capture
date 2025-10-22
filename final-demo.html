@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Capture Extension - Final Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .feature-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .feature-desc {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        .form-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .form-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin: 0.5rem 0.25rem;
+        }
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #6b7280;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+        .instructions {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .highlight {
+            background: #fef3c7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Form Capture Extension</h1>
+            <p style="font-size: 1.25rem; margin: 1rem 0;">A powerful Chrome extension that captures and stores form submissions from any website</p>
+            <p style="opacity: 0.9;">Features modern Tailwind CSS design, responsive layout, and comprehensive form data collection</p>
+        </div>
+        
+        <div class="content">
+            <!-- Extension Info -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">🎯</div>
+                    <div class="stat-label">Universal Capture</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">🎨</div>
+                    <div class="stat-label">Modern Design</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">📱</div>
+                    <div class="stat-label">Responsive</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">⚡</div>
+                    <div class="stat-label">Real-time</div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <h2 style="text-align: center; color: #1f2937; margin: 3rem 0 2rem 0;">✨ Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Universal Form Capture</div>
+                    <div class="feature-desc">Automatically captures form submissions from any website with comprehensive data collection including fields, metadata, and timestamps.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">Modern Tailwind CSS</div>
+                    <div class="feature-desc">Beautiful, responsive design with utility-first CSS framework. Mobile-first approach with smooth animations and professional styling.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Data Management</div>
+                    <div class="feature-desc">Smart storage with export capabilities, search and filter functionality, and comprehensive statistics dashboard.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-title">Developer Friendly</div>
+                    <div class="feature-desc">Toggle control, debug logging, context menu integration, and multiple access points for easy development and testing.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Real-time Monitoring</div>
+                    <div class="feature-desc">Detects and stores form data as users submit forms, including dynamic forms added after page load.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Responsive Design</div>
+                    <div class="feature-desc">Works perfectly on all screen sizes with mobile-first design, flexible grid layouts, and touch-friendly interfaces.</div>
+                </div>
+            </div>
+
+            <!-- Test Forms -->
+            <div class="form-section">
+                <h2 style="color: #1f2937; margin-bottom: 1rem;">🧪 Test Forms</h2>
+                <p style="color: #6b7280; margin-bottom: 2rem;">Submit any of these forms to test the extension's form capture functionality with the new Tailwind CSS design.</p>
+                
+                <div class="form-grid">
+                    <!-- Contact Form -->
+                    <div class="form-card">
+                        <h3 style="margin-top: 0; color: #1f2937; display: flex; align-items: center;">
+                            📧 Contact Form
+                        </h3>
+                        <form id="contact-form" action="/contact" method="POST">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Full Name</label>
+                                <input type="text" name="name" class="form-input" placeholder="Enter your full name" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Email Address</label>
+                                <input type="email" name="email" class="form-input" placeholder="Enter your email" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Subject</label>
+                                <input type="text" name="subject" class="form-input" placeholder="What's this about?" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Message</label>
+                                <textarea name="message" class="form-input" rows="4" placeholder="Tell us more..." required></textarea>
+                            </div>
+                            <div style="margin: 12px 0;">
+                                <label>
+                                    <input type="checkbox" name="newsletter" value="yes">
+                                    Subscribe to our newsletter
+                                </label>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <div class="form-card">
+                        <h3 style="margin-top: 0; color: #1f2937; display: flex; align-items: center;">
+                            👤 User Registration
+                        </h3>
+                        <form id="registration-form" action="/register" method="POST">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Username</label>
+                                <input type="text" name="username" class="form-input" placeholder="Choose a username" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Email</label>
+                                <input type="email" name="email" class="form-input" placeholder="your@email.com" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Password</label>
+                                <input type="password" name="password" class="form-input" placeholder="Create a password" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Age</label>
+                                <select name="age" class="form-input" required>
+                                    <option value="">Select your age</option>
+                                    <option value="18-25">18-25</option>
+                                    <option value="26-35">26-35</option>
+                                    <option value="36-45">36-45</option>
+                                    <option value="46-55">46-55</option>
+                                    <option value="55+">55+</option>
+                                </select>
+                            </div>
+                            <div style="margin: 12px 0;">
+                                <label>
+                                    <input type="checkbox" name="terms" value="accepted" required>
+                                    I agree to the terms and conditions
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-success">Create Account</button>
+                        </form>
+                    </div>
+
+                    <!-- Search Form -->
+                    <div class="form-card">
+                        <h3 style="margin-top: 0; color: #1f2937; display: flex; align-items: center;">
+                            🔍 Search Form
+                        </h3>
+                        <form id="search-form" action="/search" method="GET">
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Search Query</label>
+                                <input type="text" name="q" class="form-input" placeholder="What are you looking for?" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Category</label>
+                                <select name="category" class="form-input">
+                                    <option value="all">All Categories</option>
+                                    <option value="web">Web Development</option>
+                                    <option value="design">Design</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="business">Business</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; margin-bottom: 4px;">Location</label>
+                                <input type="text" name="location" class="form-input" placeholder="City, Country">
+                            </div>
+                            <div style="margin: 12px 0;">
+                                <label>
+                                    <input type="radio" name="type" value="remote" checked>
+                                    Remote
+                                </label>
+                                <label style="margin-left: 16px;">
+                                    <input type="radio" name="type" value="onsite">
+                                    On-site
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Search</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <h3 style="margin-top: 0; color: #1f2937;">📋 How to Test the Extension</h3>
+                <ol style="color: #4b5563; line-height: 1.8;">
+                    <li><span class="highlight">Load the Extension</span>: Go to <code>chrome://extensions/</code> and load the <code>dist</code> folder as unpacked extension</li>
+                    <li><span class="highlight">Test the Toggle</span>: Click the extension icon and verify the "Capture Forms" toggle works smoothly</li>
+                    <li><span class="highlight">Submit Forms</span>: Fill out and submit any of the test forms above</li>
+                    <li><span class="highlight">Check Popup</span>: Click the extension icon to see captured data in the popup</li>
+                    <li><span class="highlight">Open Sidepanel</span>: Use the "View All" button or right-click the extension icon</li>
+                    <li><span class="highlight">Verify Design</span>: Check that the modern Tailwind CSS design is working properly</li>
+                </ol>
+            </div>
+
+            <!-- Technical Details -->
+            <div style="background: #f8fafc; border-radius: 8px; padding: 2rem; margin: 2rem 0;">
+                <h3 style="color: #1f2937; margin-top: 0;">🛠️ Technical Specifications</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                    <div>
+                        <strong>Framework:</strong> React 19 + TypeScript<br>
+                        <strong>Build Tool:</strong> Vite with HMR<br>
+                        <strong>Styling:</strong> Tailwind CSS<br>
+                        <strong>Extension:</strong> Manifest V3
+                    </div>
+                    <div>
+                        <strong>Storage:</strong> Chrome Storage API<br>
+                        <strong>Permissions:</strong> Storage, Tabs, SidePanel<br>
+                        <strong>Content Scripts:</strong> Universal injection<br>
+                        <strong>Background:</strong> Service Worker
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Listen for form submissions
+        document.addEventListener('submit', (e) => {
+            console.log('Form submitted:', e.target.id || e.target.name || 'unnamed');
+            alert('Form submitted! Check the extension popup/sidepanel for captured data with the new Tailwind CSS design.');
+        });
+        
+        // Add dynamic form after 5 seconds
+        setTimeout(() => {
+            const dynamicForm = document.createElement('div');
+            dynamicForm.className = 'form-card';
+            dynamicForm.innerHTML = `
+                <h3 style="margin-top: 0; color: #1f2937; display: flex; align-items: center;">
+                    ⚡ Dynamic Form
+                </h3>
+                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">This form was added dynamically after page load to test the extension's ability to capture forms that are added after the initial page load.</p>
+                <form id="dynamic-form" action="/dynamic" method="POST">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 4px;">Dynamic Input</label>
+                        <input type="text" name="dynamic-input" class="form-input" placeholder="This form was added dynamically" required>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 4px;">Dynamic Select</label>
+                        <select name="dynamic-select" class="form-input">
+                            <option value="option1">Option 1</option>
+                            <option value="option2">Option 2</option>
+                            <option value="option3">Option 3</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Submit Dynamic Form</button>
+                </form>
+            `;
+            document.querySelector('.form-grid').appendChild(dynamicForm);
+            console.log('Dynamic form added!');
+        }, 5000);
+    </script>
+</body>
+</html>

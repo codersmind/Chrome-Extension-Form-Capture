@@ -1,5 +1,7 @@
 {
   "name": "Form Capture",
+  "description": "A powerful Chrome extension that captures and stores form submissions from any website. Features modern Tailwind CSS design, responsive layout, and comprehensive form data collection with export capabilities.",
+  "author": "CODERS MIND Team",
   "type": "module",
   "version": "1.0.0",
   "private": true,
