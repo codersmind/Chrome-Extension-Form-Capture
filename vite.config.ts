@@ -29,6 +29,9 @@ export default defineConfig({
       port: 5173,
     },
   },
+  css: {
+    postcss: './postcss.config.js',
+  },
   build: {
     rollupOptions: {
       output: {

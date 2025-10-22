@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import '../styles/globals.css';
 
 interface FormSubmission {
   id: number;
@@ -122,117 +122,153 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="sidepanel">
-      <header className="header">
-        <h1>📝 Form Capture</h1>
-        <div className="stats-grid">
-          <div className="stat">
-            <span className="stat-number">{stats.total}</span>
-            <span className="stat-label">Total</span>
+    <div className="w-full h-screen bg-white font-sans text-sm text-gray-900 flex flex-col">
+      {/* Header */}
+      <header className="p-5 border-b border-gray-200 bg-gray-50">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">📝 Form Capture</h1>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Total</div>
           </div>
-          <div className="stat">
-            <span className="stat-number">{stats.today}</span>
-            <span className="stat-label">Today</span>
+          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900">{stats.today}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Today</div>
           </div>
-          <div className="stat">
-            <span className="stat-number">{stats.domains}</span>
-            <span className="stat-label">Sites</span>
+          <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900">{stats.domains}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Sites</div>
           </div>
         </div>
       </header>
 
-      <div className="controls">
-        <div className="search-box">
+      {/* Controls */}
+      <div className="p-5 border-b border-gray-200 bg-gray-50">
+        <div className="mb-4">
           <input
             type="text"
             placeholder="Search forms..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         
-        <div className="filter-tabs">
+        <div className="flex gap-2 mb-4">
           <button 
-            className={filter === 'all' ? 'active' : ''} 
+            className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              filter === 'all' 
+                ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500'
+            }`}
             onClick={() => setFilter('all')}
           >
             All
           </button>
           <button 
-            className={filter === 'today' ? 'active' : ''} 
+            className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              filter === 'today' 
+                ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500'
+            }`}
             onClick={() => setFilter('today')}
           >
             Today
           </button>
         </div>
 
-        <div className="action-buttons">
-          <button onClick={loadFormData} disabled={loading} className="btn btn-secondary">
+        <div className="flex gap-2 justify-end">
+          <button onClick={loadFormData} disabled={loading} className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
             {loading ? 'Loading...' : 'Refresh'}
           </button>
-          <button onClick={handleExport} className="btn btn-secondary">
+          <button onClick={handleExport} className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
             Export
           </button>
-          <button onClick={handleClear} className="btn btn-danger">
+          <button onClick={handleClear} className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
             Clear
           </button>
         </div>
       </div>
 
-      <div className="submissions-list">
+      {/* Submissions List */}
+      <div className="flex-1 overflow-y-auto p-5">
         {filteredSubmissions.length === 0 ? (
-          <div className="empty-state">
-            <p>No form submissions found</p>
-            <small>Submit a form on any website to see it here!</small>
+          <div className="text-center py-10 text-gray-600">
+            <p className="text-lg font-medium mb-2">No form submissions found</p>
+            <small className="text-sm">Submit a form on any website to see it here!</small>
           </div>
         ) : (
-          filteredSubmissions.map((submission) => (
-            <div 
-              key={submission.id} 
-              className={`submission-item ${selectedSubmission?.id === submission.id ? 'selected' : ''}`}
-              onClick={() => setSelectedSubmission(submission)}
-            >
-              <div className="submission-header">
-                <div className="submission-meta">
-                  <span className="domain">{submission.domain}</span>
-                  <span className="time">{formatTimestamp(submission.timestamp)}</span>
+          <div className="space-y-3">
+            {filteredSubmissions.map((submission) => (
+              <div 
+                key={submission.id} 
+                className={`border border-gray-200 rounded-lg bg-gray-50 cursor-pointer transition-all duration-200 ${
+                  selectedSubmission?.id === submission.id 
+                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                    : 'hover:border-gray-300 hover:bg-gray-100'
+                }`}
+                onClick={() => setSelectedSubmission(
+                  selectedSubmission?.id === submission.id ? null : submission
+                )}
+              >
+                <div className="p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                      {submission.domain}
+                    </span>
+                    <span className="text-xs text-gray-500">{formatTimestamp(submission.timestamp)}</span>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    {submission.pageTitle || submission.formId}
+                  </div>
+                  <div className="text-xs text-gray-600 break-all">
+                    {submission.url}
+                  </div>
                 </div>
-                <div className="submission-title">
-                  {submission.pageTitle || submission.formId}
-                </div>
-                <div className="submission-url">
-                  {submission.url}
-                </div>
-              </div>
-              
-              {selectedSubmission?.id === submission.id && (
-                <div className="submission-details">
-                  <div className="details-section">
-                    <h4>Form Data</h4>
-                    <div className="form-data">
-                      {Object.entries(submission.data).map(([key, value]) => (
-                        <div key={key} className="data-item">
-                          <span className="data-key">{key}:</span>
-                          <span className="data-value">{value}</span>
+                
+                {/* Expandable Details - Fixed to not collapse */}
+                {selectedSubmission?.id === submission.id && (
+                  <div className="border-t border-gray-200 bg-white p-4">
+                    <div className="mb-4">
+                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Form Data</h4>
+                      <div className="space-y-1">
+                        {Object.entries(submission.data).map(([key, value]) => (
+                          <div key={key} className="flex p-2 bg-gray-50 rounded text-xs">
+                            <span className="font-semibold text-gray-900 min-w-[100px] mr-2">{key}:</span>
+                            <span className="text-gray-700 break-words">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Form Details</h4>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex p-2 bg-gray-50 rounded">
+                          <span className="font-semibold text-gray-900 min-w-[80px]">Method:</span>
+                          <span className="text-gray-700">{submission.formMethod}</span>
                         </div>
-                      ))}
+                        <div className="flex p-2 bg-gray-50 rounded">
+                          <span className="font-semibold text-gray-900 min-w-[80px]">Action:</span>
+                          <span className="text-gray-700 break-all">{submission.formAction}</span>
+                        </div>
+                        <div className="flex p-2 bg-gray-50 rounded">
+                          <span className="font-semibold text-gray-900 min-w-[80px]">Form ID:</span>
+                          <span className="text-gray-700">{submission.formId}</span>
+                        </div>
+                        {submission.formClass && (
+                          <div className="flex p-2 bg-gray-50 rounded">
+                            <span className="font-semibold text-gray-900 min-w-[80px]">Class:</span>
+                            <span className="text-gray-700">{submission.formClass}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="details-section">
-                    <h4>Form Details</h4>
-                    <div className="form-meta">
-                      <div><strong>Method:</strong> {submission.formMethod}</div>
-                      <div><strong>Action:</strong> {submission.formAction}</div>
-                      <div><strong>Form ID:</strong> {submission.formId}</div>
-                      {submission.formClass && <div><strong>Class:</strong> {submission.formClass}</div>}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
