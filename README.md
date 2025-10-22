@@ -1,6 +1,5 @@
-# React + Vite + CRXJS
+# Chrome-Extension-Form-Capture
 
-This template helps you quickly start developing Chrome extensions with React, TypeScript and Vite. It includes the CRXJS Vite plugin for seamless Chrome extension development.
 
 ## Features
 
@@ -38,11 +37,6 @@ npm run build
 - `src/content/` - Content scripts
 - `manifest.config.ts` - Chrome extension manifest configuration
 
-## Documentation
-
-- [React Documentation](https://reactjs.org/)
-- [Vite Documentation](https://vitejs.dev/)
-- [CRXJS Documentation](https://crxjs.dev/vite-plugin)
 
 ## Chrome Extension Development Notes
 
