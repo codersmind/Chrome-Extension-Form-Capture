@@ -1,0 +1,281 @@
+/* Popup Styles */
+.popup {
+  width: 380px;
+  min-height: 500px;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #f8f9fa;
+}
+
+.popup-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e74c3c;
+}
+
+.status-dot.active {
+  background: #27ae60;
+}
+
+.stats-overview {
+  display: flex;
+  padding: 16px 20px;
+  gap: 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.controls {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+  display: none;
+}
+
+.slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #ddd;
+  border-radius: 12px;
+  transition: background 0.3s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-switch input:checked + .slider {
+  background: #27ae60;
+}
+
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background: #f8f9fa;
+  border-color: #ccc;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+.recent-submissions {
+  padding: 16px 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.empty-state p {
+  margin: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.empty-state small {
+  font-size: 11px;
+}
+
+.submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.submission-item {
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submission-item:hover {
+  border-color: #3498db;
+  background: #f0f8ff;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.domain {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3498db;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.time {
+  font-size: 11px;
+  color: #666;
+}
+
+.submission-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.submission-data {
+  font-size: 11px;
+  color: #666;
+}
+
+.popup-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e5e5;
+  background: #f8f9fa;
+}
+
+.full-width {
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}

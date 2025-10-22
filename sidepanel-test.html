@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidepanel Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .instructions { background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Sidepanel Test Page</h1>
+    
+    <div class="instructions">
+        <h3>📋 How to Test Sidepanel Opening:</h3>
+        <ol>
+            <li><strong>Method 1 - Popup Button:</strong>
+                <ul>
+                    <li>Click the extension icon in Chrome toolbar</li>
+                    <li>Click "Open Side Panel" button in the popup</li>
+                    <li>Check console for debug messages</li>
+                </ul>
+            </li>
+            <li><strong>Method 2 - Right-click Menu:</strong>
+                <ul>
+                    <li>Right-click on the extension icon</li>
+                    <li>Select "Open Form Capture Sidepanel"</li>
+                </ul>
+            </li>
+            <li><strong>Method 3 - Direct URL:</strong>
+                <ul>
+                    <li>Open Chrome DevTools (F12)</li>
+                    <li>Go to Console tab</li>
+                    <li>Type: <code>chrome.runtime.getURL('src/sidepanel/index.html')</code></li>
+                    <li>Copy the URL and open in new tab</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Test Form</h2>
+        <form id="test-form" action="/test" method="POST">
+            <div>
+                <label for="test-input">Test Input:</label><br>
+                <input type="text" id="test-input" name="test-input" placeholder="Enter some text" required>
+            </div>
+            <div>
+                <label for="test-select">Test Select:</label><br>
+                <select id="test-select" name="test-select">
+                    <option value="option1">Option 1</option>
+                    <option value="option2">Option 2</option>
+                    <option value="option3">Option 3</option>
+                </select>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" name="test-checkbox" value="yes">
+                    Test Checkbox
+                </label>
+            </div>
+            <button type="submit">Submit Test Form</button>
+        </form>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Debug Information</h2>
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>Extension Status:</strong> <span id="extension-status">Checking...</span></p>
+        <button onclick="checkExtension()">Check Extension Status</button>
+        <button onclick="testSidepanelAPI()">Test Sidepanel API</button>
+        <div id="debug-output" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 3px; font-family: monospace; white-space: pre-wrap;"></div>
+    </div>
+
+    <script>
+        // Display current URL
+        document.getElementById('current-url').textContent = window.location.href;
+        
+        function checkExtension() {
+            const output = document.getElementById('debug-output');
+            let debugInfo = 'Extension Debug Info:\n\n';
+            
+            // Check if extension APIs are available
+            debugInfo += 'Chrome APIs Available:\n';
+            debugInfo += '- chrome.runtime: ' + (typeof chrome !== 'undefined' && chrome.runtime ? 'Yes' : 'No') + '\n';
+            debugInfo += '- chrome.sidePanel: ' + (typeof chrome !== 'undefined' && chrome.sidePanel ? 'Yes' : 'No') + '\n';
+            debugInfo += '- chrome.tabs: ' + (typeof chrome !== 'undefined' && chrome.tabs ? 'Yes' : 'No') + '\n\n';
+            
+            // Check extension context
+            debugInfo += 'Context Information:\n';
+            debugInfo += '- Is Extension Context: ' + (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id ? 'Yes' : 'No') + '\n';
+            debugInfo += '- Extension ID: ' + (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id ? chrome.runtime.id : 'N/A') + '\n\n';
+            
+            // Check for content script
+            debugInfo += 'Content Script Status:\n';
+            debugInfo += '- Form Capture Script: ' + (document.querySelector('[data-form-captured]') ? 'Detected' : 'Not detected') + '\n';
+            debugInfo += '- Forms Found: ' + document.querySelectorAll('form').length + '\n';
+            
+            output.textContent = debugInfo;
+        }
+        
+        function testSidepanelAPI() {
+            const output = document.getElementById('debug-output');
+            let apiInfo = 'Sidepanel API Test:\n\n';
+            
+            if (typeof chrome !== 'undefined' && chrome.sidePanel) {
+                try {
+                    apiInfo += 'chrome.sidePanel API is available\n';
+                    apiInfo += 'chrome.sidePanel.open function: ' + (typeof chrome.sidePanel.open === 'function' ? 'Available' : 'Not available') + '\n';
+                } catch (error) {
+                    apiInfo += 'Error testing sidepanel API: ' + error.message + '\n';
+                }
+            } else {
+                apiInfo += 'chrome.sidePanel API is not available\n';
+            }
+            
+            output.textContent = apiInfo;
+        }
+        
+        // Auto-check on page load
+        setTimeout(checkExtension, 1000);
+        
+        // Listen for form submissions
+        document.addEventListener('submit', (e) => {
+            console.log('Form submitted:', e.target.id || e.target.name || 'unnamed');
+            alert('Form submitted! Check the extension popup/sidepanel for captured data.');
+        });
+    </script>
+</body>
+</html>
