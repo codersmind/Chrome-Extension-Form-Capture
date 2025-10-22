@@ -105,42 +105,39 @@ const App: React.FC = () => {
 
   const openSidepanel = () => {
     console.log('Popup: Attempting to open sidepanel...');
-    try {
-      // Method 1: Try the sidepanel API
-      if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
-        console.log('Popup: Using sidepanel API');
-        chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });
-        return;
-      }
-      
-      // Method 2: Try opening in current tab
-      if (chrome.tabs && chrome.tabs.query) {
-        console.log('Popup: Using tabs API to open sidepanel');
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0] && tabs[0].id) {
-            chrome.tabs.create({ 
-              url: chrome.runtime.getURL('src/sidepanel/index.html'),
-              windowId: chrome.windows.WINDOW_ID_CURRENT 
-            });
+    
+    // Method 1: Try to get current window ID first
+    chrome.windows.getCurrent((currentWindow) => {
+      if (currentWindow && currentWindow.id) {
+        console.log('Popup: Got current window ID:', currentWindow.id);
+        
+        // Try sidepanel API with valid window ID
+        if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
+          try {
+            console.log('Popup: Using sidepanel API with window ID:', currentWindow.id);
+            chrome.sidePanel.open({ windowId: currentWindow.id });
+            return;
+          } catch (sidepanelError) {
+            console.log('Popup: Sidepanel API failed:', sidepanelError);
           }
-        });
-        return;
+        }
       }
       
-      // Method 3: Fallback - open in new tab
-      console.log('Popup: Using fallback method');
-      chrome.tabs.create({ url: chrome.runtime.getURL('src/sidepanel/index.html') });
-      
-    } catch (error) {
-      console.log('Popup: Error opening sidepanel:', error);
-      // Final fallback
+      // Method 2: Fallback - open in new tab
+      console.log('Popup: Using fallback method - opening in new tab');
       try {
-        chrome.tabs.create({ url: chrome.runtime.getURL('src/sidepanel/index.html') });
-      } catch (fallbackError) {
-        console.log('Popup: Fallback also failed:', fallbackError);
-        alert('Unable to open sidepanel. Please try refreshing the extension.');
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('src/sidepanel/index.html')
+        });
+      } catch (tabError) {
+        console.log('Popup: Tab creation failed:', tabError);
+        
+        // Method 3: Final fallback - direct URL
+        const sidepanelUrl = chrome.runtime.getURL('src/sidepanel/index.html');
+        console.log('Popup: Opening direct URL:', sidepanelUrl);
+        window.open(sidepanelUrl, '_blank');
       }
-    }
+    });
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -242,9 +239,19 @@ const App: React.FC = () => {
         <button onClick={openSidepanel} className="btn btn-primary full-width">
           Open Side Panel
         </button>
+        <button 
+          onClick={() => {
+            const url = chrome.runtime.getURL('src/sidepanel/index.html');
+            chrome.tabs.create({ url });
+          }} 
+          className="btn btn-secondary full-width"
+          style={{ marginTop: '8px' }}
+        >
+          Open in New Tab
+        </button>
         <div style={{ marginTop: '8px', textAlign: 'center' }}>
           <small style={{ color: '#666', fontSize: '11px' }}>
-            If sidepanel doesn't open, try right-clicking the extension icon
+            If sidepanel doesn't open, try the "Open in New Tab" button or right-click the extension icon
           </small>
         </div>
       </footer>

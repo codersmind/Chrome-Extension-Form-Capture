@@ -11,8 +11,27 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'openSidepanel' && tab?.windowId) {
-    chrome.sidePanel.open({ windowId: tab.windowId });
+  if (info.menuItemId === 'openSidepanel') {
+    console.log('Background: Opening sidepanel from context menu');
+    try {
+      if (tab?.windowId) {
+        chrome.sidePanel.open({ windowId: tab.windowId });
+      } else {
+        // Fallback: get current window
+        chrome.windows.getCurrent((currentWindow) => {
+          if (currentWindow && currentWindow.id) {
+            chrome.sidePanel.open({ windowId: currentWindow.id });
+          } else {
+            // Final fallback: open in new tab
+            chrome.tabs.create({ url: chrome.runtime.getURL('src/sidepanel/index.html') });
+          }
+        });
+      }
+    } catch (error) {
+      console.log('Background: Error opening sidepanel:', error);
+      // Fallback: open in new tab
+      chrome.tabs.create({ url: chrome.runtime.getURL('src/sidepanel/index.html') });
+    }
   }
 });
 
