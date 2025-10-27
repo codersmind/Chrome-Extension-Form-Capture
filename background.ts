@@ -113,4 +113,113 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     sendResponse({ success: true });
   }
+
+  // Bulk delete
+  if (message.action === 'bulkDelete') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const filtered = submissions.filter((s: any) => !message.ids.includes(s.id));
+      chrome.storage.local.set({
+        formSubmissions: filtered,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Bulk star/unstar
+  if (message.action === 'bulkStar') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const updated = submissions.map((s: any) => {
+        if (message.ids.includes(s.id)) {
+          return { ...s, starred: message.starred };
+        }
+        return s;
+      });
+      chrome.storage.local.set({
+        formSubmissions: updated,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Toggle star for single item
+  if (message.action === 'toggleStar') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const updated = submissions.map((s: any) => {
+        if (s.id === message.id) {
+          return { ...s, starred: !s.starred };
+        }
+        return s;
+      });
+      chrome.storage.local.set({
+        formSubmissions: updated,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Bulk archive
+  if (message.action === 'bulkArchive') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const updated = submissions.map((s: any) => {
+        if (message.ids.includes(s.id)) {
+          return { ...s, archived: message.archived };
+        }
+        return s;
+      });
+      chrome.storage.local.set({
+        formSubmissions: updated,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Bulk unarchive
+  if (message.action === 'bulkUnarchive') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const updated = submissions.map((s: any) => {
+        if (message.ids.includes(s.id)) {
+          return { ...s, archived: false };
+        }
+        return s;
+      });
+      chrome.storage.local.set({
+        formSubmissions: updated,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Toggle archive for single item
+  if (message.action === 'toggleArchive') {
+    chrome.storage.local.get(['formSubmissions'], (result) => {
+      const submissions = result.formSubmissions || [];
+      const updated = submissions.map((s: any) => {
+        if (s.id === message.id) {
+          return { ...s, archived: !s.archived };
+        }
+        return s;
+      });
+      chrome.storage.local.set({
+        formSubmissions: updated,
+        lastUpdated: new Date().toISOString()
+      });
+      sendResponse({ success: true });
+    });
+    return true;
+  }
 });

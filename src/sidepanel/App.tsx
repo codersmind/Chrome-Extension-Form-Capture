@@ -14,6 +14,8 @@ interface FormSubmission {
   domain: string;
   tabId?: number;
   tabUrl?: string;
+  starred?: boolean;
+  archived?: boolean;
 }
 
 interface Stats {
@@ -30,6 +32,8 @@ const App: React.FC = () => {
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'archived'>('all');
 
   useEffect(() => {
     loadFormData();
@@ -91,10 +95,25 @@ const App: React.FC = () => {
   };
 
   const filteredSubmissions = submissions.filter(submission => {
-    const matchesFilter = filter === 'all' || 
+    // First apply the active filter (all/starred/archived)
+    let matchesActiveFilter = true;
+    switch (activeFilter) {
+      case 'starred':
+        matchesActiveFilter = submission.starred === true;
+        break;
+      case 'archived':
+        matchesActiveFilter = submission.archived === true;
+        break;
+      default:
+        matchesActiveFilter = true; // 'all' shows everything
+    }
+
+    // Then apply date filter
+    const matchesDateFilter = filter === 'all' || 
       (filter === 'today' && new Date(submission.timestamp).toDateString() === new Date().toDateString()) ||
       (filter === 'domain' && submission.domain.includes(searchTerm));
     
+    // Then apply search filter
     const matchesSearch = searchTerm === '' || 
       submission.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
       submission.pageTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -103,7 +122,7 @@ const App: React.FC = () => {
         value.toLowerCase().includes(searchTerm.toLowerCase())
       );
     
-    return matchesFilter && matchesSearch;
+    return matchesActiveFilter && matchesDateFilter && matchesSearch;
   });
 
   const formatTimestamp = (timestamp: string) => {
@@ -119,6 +138,110 @@ const App: React.FC = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
+  };
+
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectedItems.size === filteredSubmissions.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filteredSubmissions.map(s => s.id)));
+    }
+  };
+
+  const handleSelectItem = (id: number) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  // Bulk actions
+  const handleBulkDelete = () => {
+    if (selectedItems.size === 0) return;
+    
+    if (confirm(`Delete ${selectedItems.size} selected form submission(s)?`)) {
+      chrome.runtime.sendMessage({ 
+        action: 'bulkDelete', 
+        ids: Array.from(selectedItems) 
+      }, () => {
+        setSelectedItems(new Set());
+        loadFormData();
+        loadStats();
+      });
+    }
+  };
+
+  const handleBulkStar = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkStar', 
+      ids: Array.from(selectedItems),
+      starred: true
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkUnstar = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkStar', 
+      ids: Array.from(selectedItems),
+      starred: false
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkArchive = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkArchive', 
+      ids: Array.from(selectedItems),
+      archived: true
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkUnarchive = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkUnarchive', 
+      ids: Array.from(selectedItems)
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleToggleArchive = (id: number) => {
+    chrome.runtime.sendMessage({ 
+      action: 'toggleArchive', 
+      id: id
+    }, () => {
+      loadFormData();
+    });
+  };
+
+  const handleToggleStar = (id: number) => {
+    chrome.runtime.sendMessage({ 
+      action: 'toggleStar', 
+      id: id
+    }, () => {
+      loadFormData();
+    });
   };
 
   return (
@@ -152,6 +275,42 @@ const App: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
+        </div>
+        
+        {/* Filter Tabs */}
+        <div className="mb-4">
+          <div className="flex gap-1 bg-gray-200 rounded-lg p-1">
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                activeFilter === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              All ({submissions.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('starred')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                activeFilter === 'starred'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              ⭐ Starred ({submissions.filter(s => s.starred === true).length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('archived')}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                activeFilter === 'archived'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              📁 Archived ({submissions.filter(s => s.archived === true).length})
+            </button>
+          </div>
         </div>
         
         <div className="flex gap-2 mb-4">
@@ -194,35 +353,154 @@ const App: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-5">
         {filteredSubmissions.length === 0 ? (
           <div className="text-center py-10 text-gray-600">
-            <p className="text-lg font-medium mb-2">No form submissions found</p>
-            <small className="text-sm">Submit a form on any website to see it here!</small>
+            <p className="text-lg font-medium mb-2">
+              {activeFilter === 'all' ? 'No form submissions found' :
+               activeFilter === 'starred' ? 'No starred forms' : 'No archived forms'}
+            </p>
+            <small className="text-sm">
+              {activeFilter === 'all' ? 'Submit a form on any website to see it here!' :
+               activeFilter === 'starred' ? 'Star forms to mark them as important' : 'Archive forms to organize them'}
+            </small>
           </div>
         ) : (
+          <>
+            {/* Selection Controls */}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === filteredSubmissions.length && filteredSubmissions.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-600">Select All</span>
+                </label>
+                {selectedItems.size > 0 && (
+                  <span className="text-sm text-gray-500">
+                    {selectedItems.size} selected
+                  </span>
+                )}
+              </div>
+              
+              {/* Bulk Actions */}
+              {selectedItems.size > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkStar}
+                    className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded font-medium transition-colors"
+                    title="Mark as Important"
+                  >
+                    ⭐ Star
+                  </button>
+                  <button
+                    onClick={handleBulkUnstar}
+                    className="px-3 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded font-medium transition-colors"
+                    title="Remove Star"
+                  >
+                    ☆ Unstar
+                  </button>
+                  <button
+                    onClick={handleBulkArchive}
+                    className="px-3 py-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 rounded font-medium transition-colors"
+                    title="Archive"
+                  >
+                    📁 Archive
+                  </button>
+                  <button
+                    onClick={handleBulkUnarchive}
+                    className="px-3 py-1 text-xs bg-green-100 text-green-800 hover:bg-green-200 rounded font-medium transition-colors"
+                    title="Unarchive"
+                  >
+                    📤 Unarchive
+                  </button>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-3 py-1 text-xs bg-red-100 text-red-800 hover:bg-red-200 rounded font-medium transition-colors"
+                    title="Delete"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              )}
+            </div>
           <div className="space-y-3">
             {filteredSubmissions.map((submission) => (
               <div 
                 key={submission.id} 
-                className={`border border-gray-200 rounded-lg bg-gray-50 cursor-pointer transition-all duration-200 ${
-                  selectedSubmission?.id === submission.id 
-                    ? 'border-blue-500 bg-blue-50 shadow-md' 
-                    : 'hover:border-gray-300 hover:bg-gray-100'
+                className={`border rounded-lg transition-all duration-200 ${
+                  selectedItems.has(submission.id)
+                    ? 'border-blue-500 bg-blue-50'
+                    : selectedSubmission?.id === submission.id 
+                      ? 'border-blue-500 bg-blue-50 shadow-md' 
+                      : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
                 }`}
                 onClick={() => setSelectedSubmission(
                   selectedSubmission?.id === submission.id ? null : submission
                 )}
               >
                 <div className="p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                      {submission.domain}
-                    </span>
-                    <span className="text-xs text-gray-500">{formatTimestamp(submission.timestamp)}</span>
-                  </div>
-                  <div className="text-sm font-semibold text-gray-900 mb-1">
-                    {submission.pageTitle || submission.formId}
-                  </div>
-                  <div className="text-xs text-gray-600 break-all">
-                    {submission.url}
+                  <div className="flex items-start gap-3">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(submission.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleSelectItem(submission.id);
+                      }}
+                      className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                            {submission.domain}
+                          </span>
+                          {submission.starred && (
+                            <span className="text-yellow-500" title="Important">⭐</span>
+                          )}
+                          {submission.archived && (
+                            <span className="text-purple-500" title="Archived">📁</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleStar(submission.id);
+                            }}
+                            className={`text-sm transition-colors ${
+                              submission.starred ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                            }`}
+                            title={submission.starred ? 'Remove star' : 'Mark as important'}
+                          >
+                            {submission.starred ? '⭐' : '☆'}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleArchive(submission.id);
+                            }}
+                            className={`text-sm transition-colors ${
+                              submission.archived ? 'text-green-500' : 'text-gray-400 hover:text-purple-500'
+                            }`}
+                            title={submission.archived ? 'Unarchive' : 'Archive'}
+                          >
+                            {submission.archived ? '📤' : '📁'}
+                          </button>
+                          <span className="text-xs text-gray-500">{formatTimestamp(submission.timestamp)}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold text-gray-900 mb-1">
+                        {submission.pageTitle || submission.formId}
+                      </div>
+                      <div className="text-xs text-gray-600 break-all">
+                        {submission.url}
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -241,7 +519,7 @@ const App: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div>
+    <div>
                       <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Form Details</h4>
                       <div className="space-y-1 text-xs">
                         <div className="flex p-2 bg-gray-50 rounded">
@@ -269,6 +547,7 @@ const App: React.FC = () => {
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
     </div>

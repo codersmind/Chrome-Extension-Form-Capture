@@ -11,6 +11,8 @@ interface FormSubmission {
   data: Record<string, string>;
   pageTitle: string;
   domain: string;
+  starred?: boolean;
+  archived?: boolean;
 }
 
 interface Stats {
@@ -25,6 +27,8 @@ const App: React.FC = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, today: 0, domains: 0, lastSubmission: null });
   const [loading, setLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<'all' | 'starred' | 'archived'>('all');
 
   useEffect(() => {
     loadExtensionState();
@@ -103,6 +107,110 @@ const App: React.FC = () => {
     });
   };
 
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectedItems.size === submissions.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(submissions.map(s => s.id)));
+    }
+  };
+
+  const handleSelectItem = (id: number) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  // Bulk actions
+  const handleBulkDelete = () => {
+    if (selectedItems.size === 0) return;
+    
+    if (confirm(`Delete ${selectedItems.size} selected form submission(s)?`)) {
+      chrome.runtime.sendMessage({ 
+        action: 'bulkDelete', 
+        ids: Array.from(selectedItems) 
+      }, () => {
+        setSelectedItems(new Set());
+        loadFormData();
+        loadStats();
+      });
+    }
+  };
+
+  const handleBulkStar = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkStar', 
+      ids: Array.from(selectedItems),
+      starred: true
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkUnstar = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkStar', 
+      ids: Array.from(selectedItems),
+      starred: false
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkArchive = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkArchive', 
+      ids: Array.from(selectedItems),
+      archived: true
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleBulkUnarchive = () => {
+    if (selectedItems.size === 0) return;
+    
+    chrome.runtime.sendMessage({ 
+      action: 'bulkUnarchive', 
+      ids: Array.from(selectedItems)
+    }, () => {
+      setSelectedItems(new Set());
+      loadFormData();
+    });
+  };
+
+  const handleToggleArchive = (id: number) => {
+    chrome.runtime.sendMessage({ 
+      action: 'toggleArchive', 
+      id: id
+    }, () => {
+      loadFormData();
+    });
+  };
+
+  const handleToggleStar = (id: number) => {
+    chrome.runtime.sendMessage({ 
+      action: 'toggleStar', 
+      id: id
+    }, () => {
+      loadFormData();
+    });
+  };
+
   const openSidepanel = () => {
     console.log('Popup: Attempting to open sidepanel...');
     
@@ -151,6 +259,25 @@ const App: React.FC = () => {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     return date.toLocaleDateString();
+  };
+
+  // Filter submissions based on active filter
+  const filteredSubmissions = submissions.filter(submission => {
+    switch (activeFilter) {
+      case 'starred':
+        return submission.starred === true;
+      case 'archived':
+        return submission.archived === true;
+      default:
+        return true; // 'all' shows everything
+    }
+  });
+
+  // Get counts for each filter
+  const getFilterCounts = () => {
+    const starredCount = submissions.filter(s => s.starred === true).length;
+    const archivedCount = submissions.filter(s => s.archived === true).length;
+    return { starredCount, archivedCount };
   };
 
   return (
@@ -211,35 +338,192 @@ const App: React.FC = () => {
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex gap-1 bg-gray-200 rounded-lg p-1">
+          <button
+            onClick={() => setActiveFilter('all')}
+            className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-all duration-200 ${
+              activeFilter === 'all'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            All ({submissions.length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('starred')}
+            className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-all duration-200 ${
+              activeFilter === 'starred'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            ⭐ Starred ({getFilterCounts().starredCount})
+          </button>
+          <button
+            onClick={() => setActiveFilter('archived')}
+            className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-all duration-200 ${
+              activeFilter === 'archived'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            📁 Archived ({getFilterCounts().archivedCount})
+          </button>
+        </div>
+      </div>
+
       {/* Recent Submissions */}
       <div className="p-4">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-semibold text-gray-900">Recent Forms</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-semibold text-gray-900">
+              {activeFilter === 'all' ? 'Recent Forms' : 
+               activeFilter === 'starred' ? 'Starred Forms' : 'Archived Forms'}
+            </h3>
+            {filteredSubmissions.length > 0 && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.size === filteredSubmissions.length && filteredSubmissions.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-xs text-gray-600">Select All</span>
+              </label>
+            )}
+          </div>
           <button onClick={openSidepanel} className="px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
             View All
           </button>
         </div>
 
-        {submissions.length === 0 ? (
+        {/* Bulk Actions Toolbar */}
+        {selectedItems.size > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-blue-900">
+                {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBulkStar}
+                  className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded font-medium transition-colors"
+                  title="Mark as Important"
+                >
+                  ⭐ Star
+                </button>
+                <button
+                  onClick={handleBulkUnstar}
+                  className="px-2 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded font-medium transition-colors"
+                  title="Remove Star"
+                >
+                  ☆ Unstar
+                </button>
+                <button
+                  onClick={handleBulkArchive}
+                  className="px-2 py-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 rounded font-medium transition-colors"
+                  title="Archive"
+                >
+                  📁 Archive
+                </button>
+                <button
+                  onClick={handleBulkUnarchive}
+                  className="px-2 py-1 text-xs bg-green-100 text-green-800 hover:bg-green-200 rounded font-medium transition-colors"
+                  title="Unarchive"
+                >
+                  📤 Unarchive
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-2 py-1 text-xs bg-red-100 text-red-800 hover:bg-red-200 rounded font-medium transition-colors"
+                  title="Delete"
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {filteredSubmissions.length === 0 ? (
           <div className="text-center py-8 text-gray-600">
-            <p className="font-medium mb-1">No forms captured yet</p>
-            <small className="text-xs">Submit a form on any website!</small>
+            <p className="font-medium mb-1">
+              {activeFilter === 'all' ? 'No forms captured yet' :
+               activeFilter === 'starred' ? 'No starred forms' : 'No archived forms'}
+            </p>
+            <small className="text-xs">
+              {activeFilter === 'all' ? 'Submit a form on any website!' :
+               activeFilter === 'starred' ? 'Star forms to mark them as important' : 'Archive forms to organize them'}
+            </small>
           </div>
         ) : (
           <div className="space-y-2">
-            {submissions.map((submission) => (
-              <div key={submission.id} className="p-3 border border-gray-200 rounded-lg bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                    {submission.domain}
-                  </span>
-                  <span className="text-xs text-gray-500">{formatTimestamp(submission.timestamp)}</span>
-                </div>
-                <div className="text-sm font-medium text-gray-900 mb-1 truncate">
-                  {submission.pageTitle || submission.formId}
-                </div>
-                <div className="text-xs text-gray-600">
-                  {Object.keys(submission.data).length} fields
+            {filteredSubmissions.map((submission) => (
+              <div key={submission.id} className={`p-3 border rounded-lg transition-all duration-200 ${
+                selectedItems.has(submission.id) 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
+              }`}>
+                <div className="flex items-start gap-3">
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.has(submission.id)}
+                    onChange={() => handleSelectItem(submission.id)}
+                    className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                          {submission.domain}
+                        </span>
+                        {submission.starred && (
+                          <span className="text-yellow-500" title="Important">⭐</span>
+                        )}
+                        {submission.archived && (
+                          <span className="text-purple-500" title="Archived">📁</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStar(submission.id);
+                          }}
+                          className={`text-sm transition-colors ${
+                            submission.starred ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+                          }`}
+                          title={submission.starred ? 'Remove star' : 'Mark as important'}
+                        >
+                          {submission.starred ? '⭐' : '☆'}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleArchive(submission.id);
+                          }}
+                          className={`text-sm transition-colors ${
+                            submission.archived ? 'text-green-500' : 'text-gray-400 hover:text-purple-500'
+                          }`}
+                          title={submission.archived ? 'Unarchive' : 'Archive'}
+                        >
+                          {submission.archived ? '📤' : '📁'}
+                        </button>
+                        <span className="text-xs text-gray-500">{formatTimestamp(submission.timestamp)}</span>
+                      </div>
+                    </div>
+                    <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                      {submission.pageTitle || submission.formId}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {Object.keys(submission.data).length} fields
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
